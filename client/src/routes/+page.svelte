@@ -11,6 +11,12 @@
         page++;
         let newPage = await fetch(`http://0.0.0.0:8000/api/manga/${page}`).then((mangas) => mangas.json()) 
         mangas = mangas.concat(newPage.data);
+
+        while (mangas.length < 20) {
+            page++;
+            let newPage = await fetch(`http://0.0.0.0:8000/api/manga/${page}`).then((mangas) => mangas.json()) 
+            mangas = mangas.concat(newPage.data);
+        }
     }
 </script>
 

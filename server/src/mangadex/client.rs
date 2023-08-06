@@ -1,6 +1,7 @@
-use crate::mangadex::common::SupportedLanguage;
 use anyhow::Result;
 use bytes::Bytes;
+use mangadex_api::v5::MangaDexClient;
+use mangadex_api_types_rust::Language;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde::Serialize;
@@ -89,17 +90,13 @@ where
     Ok(body_map)
 }
 
-pub async fn get_tag_ids(included_tags: &Vec<&str>, language: SupportedLanguage) -> Vec<String> {
-    let body_map: Tags = send_request("/manga/tag", None::<()>).await.unwrap();
-
+pub async fn get_tag_ids(client: MangaDexClient, included_tags: &Vec<&str>) -> Result<Vec<String>> {
     let mut included_tag_ids: Vec<String> = Vec::new();
 
-    for tag in body_map.data {
-        let en_tag_name = tag
-            .attributes
-            .name
-            .get(language.get_supported_language_string())
-            .unwrap();
+    let list_tags = client.manga().list_tags().build()?.send().await?;
+
+    for tag in list_tags.data {
+        let en_tag_name = tag.attributes.name.get(&Language::English).unwrap();
 
         for included_tag in included_tags {
             if en_tag_name.to_uppercase() == included_tag.to_uppercase() {
@@ -108,7 +105,7 @@ pub async fn get_tag_ids(included_tags: &Vec<&str>, language: SupportedLanguage)
         }
     }
 
-    included_tag_ids
+    Ok(included_tag_ids)
 }
 
 pub async fn get_manga(included_tag_ids: &Vec<String>, limit: i32, offset: i32) -> MangaList {
