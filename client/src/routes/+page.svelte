@@ -17,12 +17,13 @@
             let newPage = await fetch(`http://0.0.0.0:8000/api/manga/${page}`).then((mangas) => mangas.json()) 
             mangas = mangas.concat(newPage.data);
         }
+
+        console.log(mangas);
     }
 </script>
 
-<div class="contained mx-auto mt-16">
-    <h1 class="h1 text-center">Manga Jouka</h1>
-
+<h1 class="h1 text-center">Manga Jouka</h1>
+<div class="container mx-auto mt-16">
     <div class="space-y-4">
         {#each mangas as manga}
             <Manga manga={manga}/>

@@ -30,12 +30,8 @@ pub struct MangaAttributes {
     pub alt_titles: Vec<LocalizedString>,
     pub description: LocalizedString,
     pub is_locked: bool,
+    pub last_chapter: Option<String>,
     pub tags: Vec<Tag>,
-}
-
-#[derive(Deserialize, Debug)]
-struct Tags {
-    data: Vec<Tag>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

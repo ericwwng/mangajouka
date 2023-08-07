@@ -1125,6 +1125,7 @@ dependencies = [
  "bytes",
  "dotenv",
  "mangadex-api",
+ "mangadex-api-schema-rust",
  "mangadex-api-types-rust",
  "reqwest",
  "serde",

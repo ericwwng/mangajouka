@@ -29,16 +29,34 @@
 
         visible = false;
     }
+
+    function getMangaName() {
+        if ("en" in manga.attributes.title) {
+            return manga.attributes.title["en"];
+        }
+        else if ("ja-ro" in manga.attributes.title) {
+            return manga.attributes.title["ja-ro"];
+        }
+        return manga.attributes.title["ja"];
+    }
 </script>
 
 
-<div class="flex items-center p-4 bg-surface-800 rounded-lg gap-4"> 
-    {#if visible}
+{#if visible}
+    <div class="flex items-center p-4 bg-surface-600 rounded-lg gap-4">
         {#await coverArtUrlPromise then coverArtUrl}
-            <img class="h-48 w-full object-cover md:h-full md:w-48" src={coverArtUrl} alt="{manga.attributes.title} cover" />
+            <img class="h-auto w-48 object-cover" src={coverArtUrl} alt="{manga.attributes.title} cover" />
         {/await}
-        <h1>{manga.attributes.title.en}</h1>
-        <p>{manga.attributes.description.en}</p>
-        <button type="button" class="btn variant-filled" on:click={addFilteredManga(manga)}>Filter</button>
-    {/if}
-</div>
+        <div class="p-4 space-y-4 preview-description">
+            <h3 class="h3">{getMangaName()}</h3>
+
+            {#each manga.attributes.tags as tag} 
+                <span class="tag">{tag.attributes.name.en}</span>
+            {/each}
+            <div class="overflow-auto h-24">
+                {manga.attributes.description.en}
+            </div>
+            <button type="button" class="btn variant-filled-primary" on:click={addFilteredManga(manga)}>Filter</button>
+        </div>
+    </div>
+{/if}
