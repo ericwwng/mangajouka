@@ -2,20 +2,22 @@
     import Manga from "$lib/Manga.svelte";
     import type { PageData } from "./$types";
 
-    export let data: PageData;
-    let mangas = data.mangas.data;
-
     let page = 0;
 
-    async function fetchManga() {
-        page++;
+    let mangas = [];
+    fetchManga();
+
+    async function fetchNewPage() {
         let newPage = await fetch(`http://0.0.0.0:8000/api/manga/${page}`).then((mangas) => mangas.json()) 
         mangas = mangas.concat(newPage.data);
+        page++;
+    }
+
+    async function fetchManga() {
+        await fetchNewPage();
 
         while (mangas.length < 20) {
-            page++;
-            let newPage = await fetch(`http://0.0.0.0:8000/api/manga/${page}`).then((mangas) => mangas.json()) 
-            mangas = mangas.concat(newPage.data);
+            await fetchNewPage();
         }
 
         console.log(mangas);
