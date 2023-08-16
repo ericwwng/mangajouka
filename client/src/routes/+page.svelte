@@ -1,21 +1,26 @@
 <script lang="ts">
     import Manga from "$lib/Manga.svelte";
+    import FilterModal from "$lib/FilterModal.svelte";
     import type { PageData } from "./$types";
     import axios from 'axios';
+	import { modalStore } from '@skeletonlabs/skeleton';
+
+    enum FilterStatus {
+        NO_FILTER,
+        INCLUDE,
+        EXCLUDE
+    }
 
     export let data;
     let filtered_mangas = data.filtered_mangas;
-    let tags = data.tags.data;
-
-    for(let i = 0; i < tags.length; i++) {
-        if (tags[i].attributes.name.en == "Fantasy") {
-            console.log(tags[i]);
-        }
-    }
+    let tags = data.tags;
+    let includedTags = [];
+    let excludedTags = [];
 
     let page = 0;
 
     let mangas = [];
+    let mangasMaxLength = 10;
     fetchManga();
 
     async function fetchNewPage() {
@@ -26,7 +31,8 @@
             url: `${baseUrl}/manga`,
             params: {
                 // TODO: use user-selected tags instead of hardcoded string
-                'includedTags[]': "cdc58593-87dd-415e-bbc0-2ec27bf404cc",
+                'includedTags': includedTags,
+                'excludedTags': excludedTags,
                 'includes[]': 'cover_art',
                 'order[rating]': 'desc',
                 'limit': limit,
@@ -41,13 +47,43 @@
     }
 
     async function fetchManga() {
-        while (mangas.length < 10) {
+        while (mangas.length < mangasMaxLength) {
             await fetchNewPage();
         }
+        mangasMaxLength += 10;
+    }
+
+    async function reloadAfterFilterModal() {
+        mangas = [];
+        page = 0;
+
+        for(let i = 0; i < tags.length; i++) {
+            if (tags[i].filterStatus === FilterStatus.INCLUDE) {
+                includedTags.push(tags[i].id); 
+            } else if (tags[i].filterStatus === FilterStatus.EXCLUDE) {
+                excludedTags.push(tags[i].id);
+            }
+        }
+        fetchManga();
+    }
+
+    function modalFilter() {
+        const c: ModalComponent = { ref: FilterModal };
+        const modal: ModalSettings = {
+            type: 'component',
+            component: c,
+            tags: tags,
+            response: () => reloadAfterFilterModal()
+        };
+        modalStore.trigger(modal);
     }
 </script>
 
 <h1 class="h1 text-center">Manga Jouka</h1>
+<div class="flex items-center justify-center p-4 rounded-lg gap-4">
+    <button type="button" class="btn variant-filled" on:click={modalFilter}>Filter</button>
+</div>
+
 <div class="container mx-auto mt-16">
     <div class="space-y-4">
         {#each mangas as manga}

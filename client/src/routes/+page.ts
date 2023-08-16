@@ -1,6 +1,12 @@
 import type { PageLoad } from "./$types";
 import axios from 'axios';
 
+enum FilterStatus {
+    NO_FILTER,
+    INCLUDE,
+    EXCLUDE
+}
+
 async function fetchFilteredMangas() { 
     const baseUrl = 'http://0.0.0.0:8000';
     const resp = await axios({
@@ -21,7 +27,14 @@ async function getTags() {
         params: {}
     }); 
 
-    return resp.data;
+    let tags = resp.data.data;
+    for (let i = 0; i < tags.length; i++) {
+        tags[i].filterStatus = FilterStatus.NO_FILTER; 
+    }
+
+    console.log(tags)
+
+    return tags;
 }
 
 export const load: PageLoad = async () => {
