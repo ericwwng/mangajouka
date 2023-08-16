@@ -17,6 +17,24 @@ pub(crate) fn router() -> Router<ApiContext> {
         .route("/api/manga/:page", get(manga))
         .route("/api/cover", get(cover))
         .route("/api/filter", post(add_filtered_manga))
+        .route("/api/filter", get(get_filtered_mangas))
+}
+
+#[derive(Serialize, Deserialize)]
+struct CoverForm {
+    manga_id: Uuid,
+    filename: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct MangaForm {
+    manga_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct FilteredManga {
+    user_id: i64,
+    manga_id: String,
 }
 
 // TODO: Potentially change Path to use a Form if we need to read more than just page
@@ -55,22 +73,11 @@ async fn manga(
     Ok(Json(mangas))
 }
 
-#[derive(Serialize, Deserialize)]
-struct CoverForm {
-    manga_id: Uuid,
-    filename: String,
-}
-
 async fn cover(Form(cover): Form<CoverForm>) -> Result<String> {
     //TODO: So that we don't hotlink, we should upload image to a server we own and serve that
     //image instead
     let url = mangadex::client::get_cover_art_url(&cover.manga_id, &cover.filename).await;
     Ok(url)
-}
-
-#[derive(Serialize, Deserialize)]
-struct MangaForm {
-    manga_id: String,
 }
 
 async fn add_filtered_manga(State(context): State<ApiContext>, Json(manga): Json<MangaForm>) {
@@ -82,4 +89,20 @@ async fn add_filtered_manga(State(context): State<ApiContext>, Json(manga): Json
     .execute(&context.db)
     .await
     .unwrap();
+}
+
+// TODO: Take in form for user/password
+async fn get_filtered_mangas(State(context): State<ApiContext>) -> Result<Json<Vec<String>>> {
+    // TODO: implement user password logic
+    let filtered_mangas = sqlx::query_as!(
+        FilteredManga,
+        "SELECT user_id, manga_id FROM filtered_mangas"
+    )
+    .fetch_all(&context.db)
+    .await?
+    .into_iter()
+    .map(|manga| manga.manga_id)
+    .collect();
+
+    Ok(Json(filtered_mangas))
 }

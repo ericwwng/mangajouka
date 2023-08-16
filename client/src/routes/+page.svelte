@@ -1,6 +1,17 @@
 <script lang="ts">
     import Manga from "$lib/Manga.svelte";
     import type { PageData } from "./$types";
+    import axios from 'axios';
+
+    export let data;
+    let filtered_mangas = data.filtered_mangas;
+    let tags = data.tags.data;
+
+    for(let i = 0; i < tags.length; i++) {
+        if (tags[i].attributes.name.en == "Fantasy") {
+            console.log(tags[i]);
+        }
+    }
 
     let page = 0;
 
@@ -8,19 +19,31 @@
     fetchManga();
 
     async function fetchNewPage() {
-        let newPage = await fetch(`http://0.0.0.0:8000/api/manga/${page}`).then((mangas) => mangas.json()) 
-        mangas = mangas.concat(newPage.data);
+        const baseUrl = 'https://api.mangadex.org';
+        const limit = 10;
+        const resp = await axios({
+            method: 'GET',
+            url: `${baseUrl}/manga`,
+            params: {
+                // TODO: use user-selected tags instead of hardcoded string
+                'includedTags[]': "cdc58593-87dd-415e-bbc0-2ec27bf404cc",
+                'includes[]': 'cover_art',
+                'order[rating]': 'desc',
+                'limit': limit,
+                'offset': page * limit
+            }
+        }); 
+
+        let non_filtered_mangas = resp.data.data.filter((manga) => !filtered_mangas.has(manga.id));
+
+        mangas = mangas.concat(non_filtered_mangas);
         page++;
     }
 
     async function fetchManga() {
-        await fetchNewPage();
-
-        while (mangas.length < 20) {
+        while (mangas.length < 10) {
             await fetchNewPage();
         }
-
-        console.log(mangas);
     }
 </script>
 

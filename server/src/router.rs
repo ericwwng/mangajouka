@@ -1,11 +1,9 @@
-use std::net::SocketAddr;
-
+use crate::{health_check, manga};
 use axum::Router;
 use axum_error::Result;
 use sqlx::{Pool, Sqlite};
+use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
-
-use crate::{health_check, manga};
 
 #[derive(Clone)]
 pub struct ApiContext {
