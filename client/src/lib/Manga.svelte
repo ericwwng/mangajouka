@@ -1,4 +1,6 @@
 <script lang="ts">
+    import axios from 'axios';
+
     export let manga; 
 
     let visible = true;
@@ -39,21 +41,45 @@
         }
         return manga.attributes.title["ja"];
     }
+
+    async function getLatestChapter() {
+        const baseUrl = 'https://api.mangadex.org';
+        const limit = 10;
+        const resp = await axios({
+            method: 'GET',
+            url: `${baseUrl}/chapter`,
+            params: {
+                'limit': 1,
+                'manga': manga.id,
+                'order[chapter]': 'desc'
+            }
+        }); 
+
+        return resp.data.data[0].attributes.chapter;
+    }
+
+    let latestChapterPromise = getLatestChapter();
 </script>
 
 
 {#if visible}
-    <div class="flex items-center p-4 bg-surface-600 rounded-lg gap-4">
+    <div class="container mx-auto flex items-center p-4 bg-surface-600 rounded-lg gap-4">
         {#await coverArtUrlPromise then coverArtUrl}
             <img class="h-auto w-48 object-cover" src={coverArtUrl} alt="{manga.attributes.title} cover" />
         {/await}
-        <div class="p-4 space-y-4 preview-description">
-            <h3 class="h3">{getMangaName()}</h3>
+        <div class="w-full p-4 space-y-4 preview-description">
+            {#await latestChapterPromise then latestChapter}
+                <div class="flex justify-between">
+                    <h3 class="h3">{getMangaName()}</h3>
+                    <h3 class="h3">{latestChapter}</h3>
+                </div>
+            {/await}
 
             {#each manga.attributes.tags as tag} 
                 <span class="tag">{tag.attributes.name.en}</span>
             {/each}
-            <div class="overflow-auto h-24">
+
+            <div class="overflow-auto h-32">
                 {manga.attributes.description.en}
             </div>
             <button type="button" class="btn variant-filled-primary" on:click={addFilteredManga(manga)}>Filter</button>

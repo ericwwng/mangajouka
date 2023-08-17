@@ -32,8 +32,6 @@ async function getTags() {
         tags[i].filterStatus = FilterStatus.NO_FILTER; 
     }
 
-    console.log(tags)
-
     return tags;
 }
 

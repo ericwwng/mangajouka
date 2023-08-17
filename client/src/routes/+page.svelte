@@ -30,7 +30,6 @@
             method: 'GET',
             url: `${baseUrl}/manga`,
             params: {
-                // TODO: use user-selected tags instead of hardcoded string
                 'includedTags': includedTags,
                 'excludedTags': excludedTags,
                 'includes[]': 'cover_art',
@@ -84,14 +83,12 @@
     <button type="button" class="btn variant-filled" on:click={modalFilter}>Filter</button>
 </div>
 
-<div class="container mx-auto mt-16">
-    <div class="space-y-4">
-        {#each mangas as manga}
-            <Manga manga={manga}/>
-        {/each}
-    </div>
+<div class="space-y-4">
+    {#each mangas as manga}
+        <Manga manga={manga}/>
+    {/each}
+</div>
 
-    <div class="flex items-center justify-center p-4 rounded-lg gap-4">
-        <button type="button" class="btn variant-filled" on:click={fetchManga}> New Page </button>
-    </div>
+<div class="flex items-center justify-center p-4 rounded-lg gap-4">
+    <button type="button" class="btn variant-filled" on:click={fetchManga}> New Page </button>
 </div>
