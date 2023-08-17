@@ -42,6 +42,15 @@
         return manga.attributes.title["ja"];
     }
 
+    function getMangaNameWithStatus() {
+        let mangaName = getMangaName();
+        if (manga.attributes.status === "completed") {
+            mangaName += " [COMPLETED]";
+        }
+
+        return mangaName;
+    }
+
     async function getLatestChapter() {
         const baseUrl = 'https://api.mangadex.org';
         const limit = 10;
@@ -70,7 +79,7 @@
         <div class="w-full p-4 space-y-4 preview-description">
             {#await latestChapterPromise then latestChapter}
                 <div class="flex justify-between">
-                    <h3 class="h3">{getMangaName()}</h3>
+                    <h3 class="h3">{getMangaNameWithStatus()}</h3>
                     <h3 class="h3">{latestChapter}</h3>
                 </div>
             {/await}
