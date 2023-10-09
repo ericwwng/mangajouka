@@ -7,9 +7,15 @@
 	import '../app.postcss';
 
     import { AppShell, Modal } from '@skeletonlabs/skeleton';
+
+    import Sidebar from '$lib/Sidebar.svelte';
 </script>
 
 <Modal />
-<AppShell>
+<AppShell
+    class="card h-full p-1"
+    slotSidebarLeft="grid grid-cols-1"
+    slotSidebarRight="grid grid-cols-1"
+    slotPageContent="grid grid-cols-1">
     <slot />
 </AppShell>

@@ -50,7 +50,7 @@ async fn manga(
         .unwrap();
 
     let filtered_mangas = sqlx::query!(
-        "SELECT user_id, manga_id FROM filtered_mangas WHERE user_id = ?",
+        "SELECT user_id, manga_id FROM filtered_mangas WHERE user_id = $1",
         0
     )
     .fetch_all(&context.db)
@@ -82,7 +82,7 @@ async fn cover(Form(cover): Form<CoverForm>) -> Result<String> {
 
 async fn add_filtered_manga(State(context): State<ApiContext>, Json(manga): Json<MangaForm>) {
     sqlx::query!(
-        "INSERT INTO filtered_mangas (user_id, manga_id) VALUES (?, ?)",
+        r#"INSERT INTO filtered_mangas (user_id, manga_id) VALUES ($1, $2)"#,
         0,
         manga.manga_id
     )

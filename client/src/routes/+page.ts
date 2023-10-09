@@ -32,7 +32,6 @@ async function getTags() {
         tags[i].filterStatus = FilterStatus.NO_FILTER; 
     }
 
-    console.log(tags);
     tags.sort((a, b) => {
         const nameA = a.attributes.name.en.toUpperCase(); 
         const nameB = b.attributes.name.en.toUpperCase(); 

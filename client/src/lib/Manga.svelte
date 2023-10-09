@@ -74,12 +74,14 @@
 {#if visible}
     <div class="container mx-auto flex items-center p-4 bg-surface-600 rounded-lg gap-4">
         {#await coverArtUrlPromise then coverArtUrl}
-            <img class="h-auto w-48 object-cover" src={coverArtUrl} alt="{manga.attributes.title} cover" />
+            <img class="h-auto w-56 object-cover" src={coverArtUrl} alt="{manga.attributes.title} cover" />
         {/await}
         <div class="w-full p-4 space-y-4 preview-description">
             {#await latestChapterPromise then latestChapter}
                 <div class="flex justify-between">
-                    <h3 class="h3">{getMangaNameWithStatus()}</h3>
+                    <div class="overflow-auto h-12">
+                        <h3 class="h3">{getMangaNameWithStatus()}</h3>
+                    </div>
                     <h3 class="h3">{latestChapter}</h3>
                 </div>
             {/await}

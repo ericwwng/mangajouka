@@ -23,6 +23,25 @@
     let mangasMaxLength = 10;
     fetchManga();
 
+    async function fetchRatings(non_filtered_mangas) {
+        let manga_ids = [];
+        for (let i = 0; i < non_filtered_mangas.length; i++) {
+            manga_ids.push(non_filtered_mangas[i].id);
+        }
+        
+        const baseUrl = 'https://api.mangadex.org';
+        const limit = 10;
+        const resp = await axios({
+            method: 'GET',
+            url: `${baseUrl}/statistics/manga`,
+            params: {
+                'manga[]': manga_ids
+            }
+        }); 
+
+        return resp.data.statistics;
+    }
+
     async function fetchNewPage() {
         const baseUrl = 'https://api.mangadex.org';
         const limit = 10;
@@ -41,7 +60,16 @@
 
         let non_filtered_mangas = resp.data.data.filter((manga) => !filtered_mangas.has(manga.id));
 
+        let ratings = await fetchRatings(non_filtered_mangas); 
+        for (let i = 0; i < non_filtered_mangas.length; i++) {
+            non_filtered_mangas[i].rating = ratings[non_filtered_mangas[i].id].rating.bayesian;
+
+            // Some regex magic to truncate rating to 2 decimal points
+            non_filtered_mangas[i].rating = non_filtered_mangas[i].rating.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0];
+        }
+
         mangas = mangas.concat(non_filtered_mangas);
+
         page++;
     }
 

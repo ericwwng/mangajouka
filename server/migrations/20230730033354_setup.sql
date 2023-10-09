@@ -12,6 +12,6 @@ CREATE TABLE filtered_mangas (
     user_id INTEGER NOT NULL,
     manga_id TEXT NOT NULL,
 
-    FOREIGN KEY(user_id) REFERENCES users(id)
+    FOREIGN KEY(user_id) REFERENCES users(id),
     UNIQUE(user_id, manga_id)
 );
