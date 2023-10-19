@@ -7,6 +7,7 @@ mod health_check;
 mod manga;
 mod mangadex;
 mod router;
+mod user;
 
 #[tokio::main]
 async fn main() -> Result<()> {

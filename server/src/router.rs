@@ -1,4 +1,4 @@
-use crate::{health_check, manga};
+use crate::{health_check, manga, user};
 use axum::Router;
 use axum_error::Result;
 use sqlx::PgPool;
@@ -26,6 +26,7 @@ fn api_router(api_context: ApiContext) -> Router {
     Router::new()
         .merge(health_check::router())
         .merge(manga::router())
+        .merge(user::router())
         // TODO: Look into what this does
         .layer(CorsLayer::very_permissive())
         // TODO: Look into other middleware layers to add

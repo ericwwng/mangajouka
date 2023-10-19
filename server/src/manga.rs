@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use axum::{
-    extract::{Path, State},
+    extract::State,
     routing::{get, post},
     Form, Json, Router,
 };
@@ -14,7 +14,7 @@ use crate::{mangadex, router::ApiContext};
 
 pub(crate) fn router() -> Router<ApiContext> {
     Router::new()
-        .route("/api/manga/:page", get(manga))
+        .route("/api/manga", get(manga))
         .route("/api/cover", get(cover))
         .route("/api/filter", post(add_filtered_manga))
         .route("/api/filter", get(get_filtered_mangas))
@@ -27,20 +27,32 @@ struct CoverForm {
 }
 
 #[derive(Serialize, Deserialize)]
-struct MangaForm {
+struct AddMangaForm {
+    user_id: Uuid,
     manga_id: String,
 }
 
 #[derive(Serialize, Deserialize)]
 struct FilteredManga {
-    user_id: i64,
+    user_id: Uuid,
     manga_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct GetMangaForm {
+    user_id: Uuid,
+    page: i32,
+}
+
+#[derive(Serialize, Deserialize)]
+struct GetFilteredMangaForm {
+    user_id: Uuid,
 }
 
 // TODO: Potentially change Path to use a Form if we need to read more than just page
 async fn manga(
     State(context): State<ApiContext>,
-    Path(page): Path<i32>,
+    Form(manga_form): Form<GetMangaForm>,
 ) -> Result<Json<mangadex::client::MangaList>> {
     let client = MangaDexClient::default();
     // TODO: Read user tag input
@@ -51,7 +63,7 @@ async fn manga(
 
     let filtered_mangas = sqlx::query!(
         "SELECT user_id, manga_id FROM filtered_mangas WHERE user_id = $1",
-        0
+        &manga_form.user_id
     )
     .fetch_all(&context.db)
     .await?;
@@ -64,7 +76,8 @@ async fn manga(
     // TODO: Change limit from to 100
     let limit = 20;
 
-    let mut mangas = mangadex::client::get_manga(&included_tag_ids, limit, limit * page).await;
+    let mut mangas =
+        mangadex::client::get_manga(&included_tag_ids, limit, limit * &manga_form.page).await;
 
     mangas
         .data
@@ -80,10 +93,10 @@ async fn cover(Form(cover): Form<CoverForm>) -> Result<String> {
     Ok(url)
 }
 
-async fn add_filtered_manga(State(context): State<ApiContext>, Json(manga): Json<MangaForm>) {
+async fn add_filtered_manga(State(context): State<ApiContext>, Json(manga): Json<AddMangaForm>) {
     sqlx::query!(
         r#"INSERT INTO filtered_mangas (user_id, manga_id) VALUES ($1, $2)"#,
-        0,
+        manga.user_id,
         manga.manga_id
     )
     .execute(&context.db)
@@ -92,11 +105,15 @@ async fn add_filtered_manga(State(context): State<ApiContext>, Json(manga): Json
 }
 
 // TODO: Take in form for user/password
-async fn get_filtered_mangas(State(context): State<ApiContext>) -> Result<Json<Vec<String>>> {
+async fn get_filtered_mangas(
+    State(context): State<ApiContext>,
+    Form(form): Form<GetFilteredMangaForm>,
+) -> Result<Json<Vec<String>>> {
     // TODO: implement user password logic
     let filtered_mangas = sqlx::query_as!(
         FilteredManga,
-        "SELECT user_id, manga_id FROM filtered_mangas"
+        "SELECT user_id, manga_id FROM filtered_mangas WHERE user_id = $1",
+        form.user_id
     )
     .fetch_all(&context.db)
     .await?

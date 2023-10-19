@@ -4,6 +4,7 @@
     import type { PageData } from "./$types";
     import axios from 'axios';
 	import { modalStore } from '@skeletonlabs/skeleton';
+    import { loggedIn, userId } from '$lib/store.js';
 
     enum FilterStatus {
         NO_FILTER,
@@ -11,8 +12,18 @@
         EXCLUDE
     }
 
+    let loggedInValue;
+    loggedIn.subscribe((value) => {
+        loggedInValue = value;
+    });
+
+    let userIdValue;
+    userId.subscribe((value) => {
+        userIdValue = value;
+    });
+
     export let data;
-    let filtered_mangas = data.filtered_mangas;
+    let filtered_mangas;
     let tags = data.tags;
     let includedTags = [];
     let excludedTags = [];
@@ -21,8 +32,14 @@
 
     let mangas = [];
     let mangasMaxLength = 10;
-    fetchManga();
 
+    // To be used in testing
+    let fetchCount = 0;
+    let maxFetches = 10;
+    if (loggedInValue) {
+        reloadAfterFilterModal();
+    }
+    
     async function fetchRatings(non_filtered_mangas) {
         let manga_ids = [];
         for (let i = 0; i < non_filtered_mangas.length; i++) {
@@ -75,14 +92,32 @@
 
     async function fetchManga() {
         while (mangas.length < mangasMaxLength) {
+            fetchCount++;
+            if (fetchCount >= maxFetches) {
+                break;
+            }
             await fetchNewPage();
         }
         mangasMaxLength += 10;
     }
 
+    async function fetchFilteredMangas() { 
+        const baseUrl = 'http://0.0.0.0:8000';
+        const resp = await axios({
+            method: 'GET',
+            url: `${baseUrl}/api/filter`,
+            params: {
+                "user_id": userIdValue
+            }
+        }); 
+
+        return new Set(resp.data);
+    }
+
     async function reloadAfterFilterModal() {
         mangas = [];
         page = 0;
+        filtered_mangas = await fetchFilteredMangas();
 
         for(let i = 0; i < tags.length; i++) {
             if (tags[i].filterStatus === FilterStatus.INCLUDE) {
@@ -106,17 +141,22 @@
     }
 </script>
 
-<h1 class="h1 text-center">Manga Jouka</h1>
-<div class="flex items-center justify-center p-4 rounded-lg gap-4">
-    <button type="button" class="btn variant-filled" on:click={modalFilter}>Filter</button>
-</div>
+{#if loggedInValue}
+    <div class="flex items-center justify-center p-4 rounded-lg gap-4">
+        <button type="button" class="btn variant-filled" on:click={modalFilter}>Filter Settings</button>
+    </div>
 
-<div class="space-y-4">
-    {#each mangas as manga}
-        <Manga manga={manga}/>
-    {/each}
-</div>
+    <div class="space-y-4">
+        {#each mangas as manga}
+            <Manga manga={manga}/>
+        {/each}
+    </div>
 
-<div class="flex items-center justify-center p-4 rounded-lg gap-4">
-    <button type="button" class="btn variant-filled" on:click={fetchManga}> New Page </button>
-</div>
+    <div class="flex items-center justify-center p-4 rounded-lg gap-4">
+        <button type="button" class="btn variant-filled" on:click={fetchManga}>New Page</button>
+    </div>
+{:else}
+    <div class="flex items-center justify-center p-4 rounded-lg gap-4">
+        <a href="/login" class="btn variant-filled">Login</a>
+    </div>
+{/if}

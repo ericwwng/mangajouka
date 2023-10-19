@@ -6,16 +6,26 @@
 	// Most of your app wide CSS should be put in this file
 	import '../app.postcss';
 
-    import { AppShell, Modal } from '@skeletonlabs/skeleton';
+    import { AppShell, AppBar, Modal } from '@skeletonlabs/skeleton';
 
     import Sidebar from '$lib/Sidebar.svelte';
 </script>
 
 <Modal />
 <AppShell
-    class="card h-full p-1"
-    slotSidebarLeft="grid grid-cols-1"
-    slotSidebarRight="grid grid-cols-1"
-    slotPageContent="grid grid-cols-1">
+    header="bg-surface-100/5 w-56 p-4">
     <slot />
+
+    <svelte:fragment slot="header">
+        <AppBar class="w-full">
+            <svelte:fragment slot="lead">
+                <a href="/"><h3 class="h3">MangaJouka</h3></a>
+            </svelte:fragment>
+            <svelte:fragment slot="trail">
+                <a href="/register">Register</a>
+                <a href="/login">Login</a>
+            </svelte:fragment>
+        </AppBar>
+    </svelte:fragment>
+
 </AppShell>

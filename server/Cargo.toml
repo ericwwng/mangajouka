@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.72"
+argon2 = "0.5.2"
 axum = { version = "0.6.19", features = ["form", "macros"] }
 axum-error = "0.2.0"
 bytes = "1.4.0"
@@ -14,10 +15,12 @@ config = "0.13.3"
 mangadex-api = { version = "2.2.1", features = ["multi-thread"] }
 mangadex-api-schema-rust = { version = "0.3.2", features = ["serialize"]}
 mangadex-api-types-rust = "0.3.4"
+rand = "0.8.5"
 reqwest = "0.11.18"
 serde = { version = "1.0.178", features = ["derive"] }
 serde_json = "1.0.104"
 sqlx = { version = "0.7.1", features = ["runtime-tokio", "postgres", "tls-rustls", "uuid"] }
 tokio = { version = "1.29.1", features = ["full"] }
 tower-http = { version = "0.4.3", features = ["cors", "trace"] }
-uuid = { version = "1.4.1", features = ["serde"] }
+tracing = "0.1.37"
+uuid = { version = "1.4.1", features = ["serde", "v4"] }
