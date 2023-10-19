@@ -1,9 +1,15 @@
 <script lang="ts">
     import axios from 'axios';
+    import { userId } from '$lib/store.js';
 
     export let manga; 
 
     let visible = true;
+
+    let userIdValue;
+    userId.subscribe((value) => {
+        userIdValue = value;
+    });
 
     async function getCoverArtUrl() {
         let filename;
@@ -23,7 +29,12 @@
     async function addFilteredManga(filtered_manga) {
         await fetch(`http://0.0.0.0:8000/api/filter`, {
             method: "POST",
-            body: JSON.stringify({"manga_id": filtered_manga.id}),
+            body: JSON.stringify(
+                {
+                    "manga_id": filtered_manga.id,
+                    "user_id": userIdValue
+                }
+            ),
            	headers: {
     			'Content-Type': 'application/json'
             }}
