@@ -42,7 +42,7 @@ then
       -e POSTGRES_PASSWORD=${DB_PASSWORD} \
       -e POSTGRES_DB=${DB_NAME} \
       -p "${DB_PORT}":5432 \
-      -v postgres:/var/lib/postgresql/data \
+      -v postgres_data:/var/lib/postgresql \
       -d \
       --name "postgres_$(date '+%s')" \
       postgres -N 1000

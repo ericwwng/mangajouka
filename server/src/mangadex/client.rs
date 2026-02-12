@@ -1,7 +1,7 @@
 use anyhow::Result;
 use bytes::Bytes;
 use mangadex_api::v5::MangaDexClient;
-use mangadex_api_types_rust::Language;
+use mangadex_api_types_rust::language::Language;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde::Serialize;
