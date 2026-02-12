@@ -9,7 +9,7 @@
 	const cForm = 'space-y-4';
 
     async function onFormSubmit() {
-        await fetch(`http://0.0.0.0:8000/api/user/register`, {
+        await fetch(`http://localhost:8000/api/user/register`, {
             method: "POST",
             body: JSON.stringify(
                 {

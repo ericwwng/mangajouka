@@ -102,7 +102,7 @@
     }
 
     async function fetchFilteredMangas() { 
-        const baseUrl = 'http://0.0.0.0:8000';
+        const baseUrl = 'http://localhost:8000';
         const resp = await axios({
             method: 'GET',
             url: `${baseUrl}/api/filter`,

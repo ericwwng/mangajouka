@@ -18,7 +18,7 @@
                 filename = manga.relationships[i].attributes.fileName;
             }
         }
-        let res = await fetch(`http://0.0.0.0:8000/api/cover?manga_id=${manga.id}&filename=${filename}`);
+        let res = await fetch(`http://localhost:8000/api/cover?manga_id=${manga.id}&filename=${filename}`);
         let url = await res.text();
 
         return url;
@@ -27,7 +27,7 @@
     let coverArtUrlPromise = getCoverArtUrl();
 
     async function addFilteredManga(filtered_manga) {
-        await fetch(`http://0.0.0.0:8000/api/filter`, {
+        await fetch(`http://localhost:8000/api/filter`, {
             method: "POST",
             body: JSON.stringify(
                 {
