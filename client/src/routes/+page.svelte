@@ -88,6 +88,36 @@
         mangas = mangas.concat(non_filtered_mangas);
 
         page++;
+
+	// TODO: Move this logic away from web application
+	for (let i = 0; i < mangas.length; i++) {
+	    let current_manga = mangas[i];
+
+	    let single_manga_tags = [];
+	    for (let j = 0; j < current_manga.attributes.tags.length; j++) {
+		single_manga_tags.push(current_manga.attributes.tags[j].attributes.name["en"]);
+	    }
+	    const title_data = current_manga.attributes.title;
+	    const current_title = title_data["en"] ?? title_data["ja-ro"] ?? "N/A";
+
+	    const description_data = current_manga.attributes.description;
+	    const current_description = description_data["en"] ?? description_data["ja-ro"] ?? "N/A";
+	    
+	    await fetch(`http://localhost:8000/api/manga_information`, {
+		method: "POST",
+		body: JSON.stringify(
+		    {
+			"id": current_manga.id,
+			"title": current_title,
+			"description": current_description, 
+			"tags": single_manga_tags,
+		    }
+		),
+		headers: {
+		    'Content-Type': 'application/json'
+		}}
+	    );
+	}
     }
 
     async function fetchManga() {

@@ -23,6 +23,14 @@ pub struct Manga {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct MangaInformation {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub tags: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct MangaAttributes {
     pub title: LocalizedString,

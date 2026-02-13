@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    mangadex::{self, client::Manga},
+    mangadex::{self, client::MangaInformation},
     router::ApiContext,
 };
 
@@ -128,22 +128,20 @@ async fn get_filtered_mangas(
     Ok(Json(filtered_mangas))
 }
 
-async fn add_manga_information(State(context): State<ApiContext>, Json(manga): Json<Manga>) {
-    let tag_names_vec: Vec<String> = manga
-        .attributes
-        .tags
-        .iter()
-        .map(|tag| tag.attributes.name.get("en").unwrap().to_string())
-        .collect();
-
-    let tag_names: &[String] = &tag_names_vec;
-
+async fn add_manga_information(
+    State(context): State<ApiContext>,
+    Json(manga): Json<MangaInformation>,
+) {
     sqlx::query!(
-        r#"INSERT INTO manga_information (manga_id, manga_name, manga_description, manga_tags) VALUES ($1, $2, $3, $4)"#,
-        &manga.id.to_string(),
-        manga.attributes.title.get("en").unwrap().as_str(),
-        manga.attributes.description.get("en").unwrap().as_str(),
-        tag_names
+        r#"INSERT INTO manga_information (manga_id, manga_name, manga_description, manga_tags) 
+        VALUES ($1, $2, $3, $4) 
+        ON CONFLICT (manga_id)
+        DO UPDATE SET
+            manga_name = EXCLUDED.manga_name,
+            manga_description = EXCLUDED.manga_description,
+            manga_tags = EXCLUDED.manga_tags;
+        "#,
+        &manga.id, &manga.title, &manga.description, &manga.tags
     )
     .execute(&context.db)
     .await
