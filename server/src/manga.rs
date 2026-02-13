@@ -10,7 +10,10 @@ use mangadex_api::MangaDexClient;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{mangadex, router::ApiContext};
+use crate::{
+    mangadex::{self, client::Manga},
+    router::ApiContext,
+};
 
 pub(crate) fn router() -> Router<ApiContext> {
     Router::new()
@@ -18,6 +21,7 @@ pub(crate) fn router() -> Router<ApiContext> {
         .route("/api/cover", get(cover))
         .route("/api/filter", post(add_filtered_manga))
         .route("/api/filter", get(get_filtered_mangas))
+        .route("/api/manga_information", post(add_manga_information))
 }
 
 #[derive(Serialize, Deserialize)]
@@ -73,11 +77,11 @@ async fn manga(
         filtered_mangas_set.insert(manga.manga_id);
     }
 
-    // TODO: Change limit from to 100
+    // TODO: Change limit to 100
     let limit = 20;
 
     let mut mangas =
-        mangadex::client::get_manga(&included_tag_ids, limit, limit * &manga_form.page).await;
+        mangadex::client::get_manga(&included_tag_ids, limit, limit * manga_form.page).await;
 
     mangas
         .data
@@ -122,4 +126,26 @@ async fn get_filtered_mangas(
     .collect();
 
     Ok(Json(filtered_mangas))
+}
+
+async fn add_manga_information(State(context): State<ApiContext>, Json(manga): Json<Manga>) {
+    let tag_names_vec: Vec<String> = manga
+        .attributes
+        .tags
+        .iter()
+        .map(|tag| tag.attributes.name.get("en").unwrap().to_string())
+        .collect();
+
+    let tag_names: &[String] = &tag_names_vec;
+
+    sqlx::query!(
+        r#"INSERT INTO manga_information (manga_id, manga_name, manga_description, manga_tags) VALUES ($1, $2, $3, $4)"#,
+        &manga.id.to_string(),
+        manga.attributes.title.get("en").unwrap().as_str(),
+        manga.attributes.description.get("en").unwrap().as_str(),
+        tag_names
+    )
+    .execute(&context.db)
+    .await
+    .unwrap();
 }

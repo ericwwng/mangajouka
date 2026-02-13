@@ -1,5 +1,4 @@
 use anyhow::Result;
-use bytes::Bytes;
 use mangadex_api::v5::MangaDexClient;
 use mangadex_api_types_rust::language::Language;
 use serde::de::DeserializeOwned;
@@ -36,13 +35,13 @@ pub struct MangaAttributes {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Tag {
-    id: Uuid,
-    attributes: TagAttributes,
+    pub id: Uuid,
+    pub attributes: TagAttributes,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct TagAttributes {
-    name: LocalizedString,
+pub struct TagAttributes {
+    pub name: LocalizedString,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -125,14 +124,15 @@ pub async fn get_cover_art_url(manga_id: &Uuid, filename: &str) -> String {
     full_url
 }
 
-pub async fn get_cover_art(manga_id: &Uuid, filename: &str) -> Bytes {
-    let base_url = "https://uploads.mangadex.org";
-
-    let full_url = format!("{}{}/{}/{}", base_url, "/covers", manga_id, filename);
-
-    let client = reqwest::Client::new();
-    let res = client.get(full_url).send().await.unwrap();
-
-    let bytes = &res.bytes().await.unwrap();
-    bytes.clone()
-}
+// TODO: Use for uploading cover art locally so we don't hotlink
+// pub async fn get_cover_art(manga_id: &Uuid, filename: &str) -> Bytes {
+//     let base_url = "https://uploads.mangadex.org";
+//
+//     let full_url = format!("{}{}/{}/{}", base_url, "/covers", manga_id, filename);
+//
+//     let client = reqwest::Client::new();
+//     let res = client.get(full_url).send().await.unwrap();
+//
+//     let bytes = &res.bytes().await.unwrap();
+//     bytes.clone()
+// }
