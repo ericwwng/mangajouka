@@ -22,6 +22,7 @@ pub(crate) fn router() -> Router<ApiContext> {
         .route("/api/filter", post(add_filtered_manga))
         .route("/api/filter", get(get_filtered_mangas))
         .route("/api/manga_information", post(add_manga_information))
+        .route("/api/manga_information", get(get_manga_information))
 }
 
 #[derive(Serialize, Deserialize)]
@@ -50,6 +51,11 @@ struct GetMangaForm {
 
 #[derive(Serialize, Deserialize)]
 struct GetFilteredMangaForm {
+    user_id: Uuid,
+}
+
+#[derive(Serialize, Deserialize)]
+struct GetMangaInformationForm {
     user_id: Uuid,
 }
 
@@ -141,9 +147,38 @@ async fn add_manga_information(
             manga_description = EXCLUDED.manga_description,
             manga_tags = EXCLUDED.manga_tags;
         "#,
-        &manga.id, &manga.title, &manga.description, &manga.tags
+        &manga.id,
+        &manga.title,
+        &manga.description,
+        &manga.tags
     )
     .execute(&context.db)
     .await
     .unwrap();
+}
+
+async fn get_manga_information(
+    State(context): State<ApiContext>,
+    Form(form): Form<GetMangaInformationForm>,
+) -> Result<Json<Vec<MangaInformation>>> {
+    let manga_informations: Vec<MangaInformation> = sqlx::query!(
+        r#"SELECT mi.manga_id, mi.manga_name, mi.manga_description, mi.manga_tags FROM manga_information mi
+        JOIN filtered_mangas fm
+        ON mi.manga_id = fm.manga_id
+        WHERE fm.user_id = $1;
+        "#,
+        form.user_id
+    )
+    .fetch_all(&context.db)
+    .await?
+    .into_iter()
+    .map(|manga_information| MangaInformation { 
+        id: manga_information.manga_id, 
+        title: manga_information.manga_name.unwrap_or("N/A".to_string()), 
+        description: manga_information.manga_description.unwrap_or("N/A".to_string()), 
+        tags: manga_information.manga_tags.unwrap_or(Vec::new()),
+    })
+    .collect();
+
+    Ok(Json(manga_informations))
 }
