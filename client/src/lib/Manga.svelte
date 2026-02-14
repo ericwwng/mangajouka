@@ -35,8 +35,8 @@
                     "user_id": userIdValue
                 }
             ),
-           	headers: {
-    			'Content-Type': 'application/json'
+	    headers: {
+		    'Content-Type': 'application/json'
             }}
         );
 

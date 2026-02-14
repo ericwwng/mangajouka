@@ -73,25 +73,13 @@
                 'limit': limit,
                 'offset': page * limit
             }
-        }); 
+	}); 
 
-        let non_filtered_mangas = resp.data.data.filter((manga) => !filtered_mangas.has(manga.id));
-
-        let ratings = await fetchRatings(non_filtered_mangas); 
-        for (let i = 0; i < non_filtered_mangas.length; i++) {
-            non_filtered_mangas[i].rating = ratings[non_filtered_mangas[i].id].rating.bayesian;
-
-            // Some regex magic to truncate rating to 2 decimal points
-            non_filtered_mangas[i].rating = non_filtered_mangas[i].rating.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0];
-        }
-
-        mangas = mangas.concat(non_filtered_mangas);
-
-        page++;
-
+	let raw_mangas = resp.data.data;
+	console.log(raw_mangas);
 	// TODO: Move this logic away from web application
-	for (let i = 0; i < mangas.length; i++) {
-	    let current_manga = mangas[i];
+	for (let i = 0; i < raw_mangas.length; i++) {
+	    let current_manga = raw_mangas[i];
 
 	    let single_manga_tags = [];
 	    for (let j = 0; j < current_manga.attributes.tags.length; j++) {
@@ -118,6 +106,20 @@
 		}}
 	    );
 	}
+
+        let non_filtered_mangas = resp.data.data.filter((manga) => !filtered_mangas.has(manga.id));
+
+        let ratings = await fetchRatings(non_filtered_mangas); 
+        for (let i = 0; i < non_filtered_mangas.length; i++) {
+            non_filtered_mangas[i].rating = ratings[non_filtered_mangas[i].id].rating.bayesian;
+
+            // Some regex magic to truncate rating to 2 decimal points
+            non_filtered_mangas[i].rating = non_filtered_mangas[i].rating.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0];
+        }
+
+        mangas = mangas.concat(non_filtered_mangas);
+
+        page++;	
     }
 
     async function fetchManga() {
