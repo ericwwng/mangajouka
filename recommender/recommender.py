@@ -1,12 +1,10 @@
 import requests
 import dotenv
 import asyncio
-from typing import Optional
 
+from typing import Optional
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import Runnable, RunnableParallel, RunnablePassthrough
+from engine import MangaRecommendationEngine
 
 
 def call_get_manga_information_api(user_id):
@@ -43,66 +41,21 @@ async def run_workflow():
         print("LLM not initialized. Exiting main")
         return
 
-    fetch_manga_description_chain: Runnable = (
-        ChatPromptTemplate.from_messages(
-            [
-                ("system", "Find a description for the manga with this name"),
-                ("user", "{manga_name}"),
-            ]
-        )
-        | llm
-        | StrOutputParser()
-    )
+    # Instantiate the engine
+    engine = MangaRecommendationEngine(llm)
+    full_chain = engine.build_full_chain()
 
-    fetch_manga_reviews_chain: Runnable = (
-        ChatPromptTemplate.from_messages(
-            [
-                ("system", "Find reviews for the manga with this name"),
-                ("user", "{manga_name}"),
-            ]
-        )
-        | llm
-        | StrOutputParser()
-    )
+    # Data Fetching
+    manga_info = call_get_manga_information_api("c5f647ea-15a2-4977-9981-09395ee06761")
 
-    map_chain = RunnableParallel(
-        {
-            "description": fetch_manga_description_chain,
-            "reviews": fetch_manga_reviews_chain,
-            "manga_name": RunnablePassthrough(),
-            "manga_information": RunnablePassthrough(),
-        }
-    )
-
-    synthesis_prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                """Based on the following information of the given manga:
-        Name: {manga_name}
-        Description: {description}
-        Reviews: {reviews}
-        Favorite User Manga Information: {manga_information}
-        Provide a recommendation rating for the given manga based on the user's favorite manga information from a scale of 0.0/10.0,
-        and describe how the recommendation relates to the user's preferences""",
-            ),
-            ("user", "Given manga_name: {manga_name}"),
-        ]
-    )
-
-    full_chain = map_chain | synthesis_prompt | llm | StrOutputParser()
-
-    manga_information = call_get_manga_information_api(
-        "c5f647ea-15a2-4977-9981-09395ee06761"
-    )
-
+    # Execution
     try:
         response = await full_chain.ainvoke(
-            {"manga_name": "Kiss x Sis", "manga_information": manga_information}
+            {"manga_name": "One Piece", "manga_information": manga_info}
         )
         print(response)
     except Exception as e:
-        print(f"\n An error occurred during agent execution: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
