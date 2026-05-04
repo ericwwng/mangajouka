@@ -24,7 +24,7 @@ def call_get_manga_information_api(user_id):
 
 def load_llm() -> Optional[ChatOpenAI]:
     try:
-        llm: Optional[ChatOpenAI] = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
+        llm: Optional[ChatOpenAI] = ChatOpenAI(model="gpt-5-mini", temperature=0.7)
         if llm:
             print(f"Language model initialized: {llm.model_name}")
     except Exception as e:
@@ -48,9 +48,6 @@ async def run_workflow(batch_inputs) -> list[str]:
     # Execution
     try:
         response = await full_chain.abatch(batch_inputs)
-        # response = await full_chain.ainvoke(
-        #    {"manga_name": "One Piece", "manga_information": manga_info}
-        # )
 
         return response
     except Exception as e:
@@ -67,7 +64,7 @@ dotenv.load_dotenv()
 @app.post("/recommend/<user_id>")
 async def get_bulk_recommendations(user_id):
     # 1. Get the list of manga names from the request body
-    # Expected JSON: {"manga_names": ["Naruto", "Berserk", "Monster"]}
+    # Expected JSON: {"manga_names": ["One Piece", "Berserk"]}
     data = request.get_json()
     manga_names = data.get("manga_names", [])
 
@@ -76,7 +73,6 @@ async def get_bulk_recommendations(user_id):
 
     try:
         # 2. Fetch user preferences once
-        # manga_info = call_get_manga_information_api("c5f647ea-15a2-4977-9981-09395ee06761")
         user_prefs = call_get_manga_information_api(user_id)
 
         # 3. Prepare inputs for batch processing
@@ -96,8 +92,3 @@ async def get_bulk_recommendations(user_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# if __name__ == "__main__":
-#     dotenv.load_dotenv()
-#     asyncio.run(run_workflow())
