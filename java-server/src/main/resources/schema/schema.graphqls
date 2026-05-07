@@ -1,0 +1,18 @@
+type Query {
+    readMangas(userId: ID!): [ReadManga!]!
+    readManga(userId: ID!, mangaId: String!): ReadManga
+}
+
+type Mutation {
+    addReadManga(userId: ID!, mangaId: String!, rating: Int): ReadManga!
+    deleteReadManga(id: ID!): Boolean!
+}
+
+type ReadManga {
+    id: ID!
+    userId: ID!
+    mangaId: String!
+    rating: Int
+    createdAt: String
+    updatedAt: String
+}
